@@ -27,7 +27,8 @@ let package = Package(
     targets: [
         .target(
             name: "Inject",
-            dependencies: [.targetItem(name: "HotReloadMacro", condition: .when(traits: ["HotReloadMacro"]))]
+            dependencies: [.targetItem(name: "HotReloadMacro", condition: .when(traits: ["HotReloadMacro"]))],
+            swiftSettings: [.swiftLanguageMode(.v5)]
         ),
         .macro(
             name: "HotReloadMacro",
