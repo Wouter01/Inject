@@ -110,6 +110,7 @@ public struct HotReloadMacro: MemberMacro {
             
             @_implements(View, body)
             @_disfavoredOverload
+            @ViewBuilder
             \(accessControl)var __body: AnyView {
                 AnyView(body)
             }
