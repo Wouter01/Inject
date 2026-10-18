@@ -9,6 +9,7 @@
 #if HotReloadMacro
 
 @attached(member, names: named(__observeInjection), named(Body), named(__body))
+@attached(memberAttribute)
 public macro HotReload() = #externalMacro(module: "HotReloadMacro", type: "HotReloadMacro")
 
 #endif
