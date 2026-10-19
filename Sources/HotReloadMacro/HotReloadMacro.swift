@@ -104,6 +104,20 @@ public struct HotReloadMacro: MemberMacro {
             .contains { conformsto(protocol: name, $0) } == true
     }
     
+    static func accessControl(of decl: some DeclSyntaxProtocol) -> TokenSyntax? {
+        guard
+            let modifiers = decl.asProtocol(WithModifiersSyntax.self)?.modifiers,
+            var token = modifiers.first(where: {
+                $0.name.tokenKind.isVisibilityKeyword && $0.detail == nil
+            })?.name.trimmed
+        else {
+            return nil
+        }
+        
+        token.trailingTrivia = .space
+        return token
+    }
+    
     public static func expansion(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
@@ -126,13 +140,12 @@ public struct HotReloadMacro: MemberMacro {
             //  - The macro overriding the Body typealias, which causes autocomplete to fill in `var body: AnyView`
             //  - The macro providing a valid `body` implementation, but no existing declaration is present.
             //      This will compile, but will cause an infinite loop.
-            guard memberDecls.contains(where: isBodyProperty) else {
+            guard let bodyDecl = memberDecls.first(where: isBodyProperty) else {
                 context.diagnose(.init(node: declaration, message: MacroExpansionErrorMessage("\(declaration.name) must have a View body")))
                 return []
             }
             
-            var accessControl = declaration.modifiers.first(where: { $0.name.tokenKind.isVisibilityKeyword })?.name.trimmed
-            accessControl?.trailingTrivia = .space
+            let accessControl = accessControl(of: bodyDecl)
             
             return [
                 """
@@ -158,13 +171,12 @@ public struct HotReloadMacro: MemberMacro {
             //  - The macro overriding the Body typealias, which causes autocomplete to fill in `var body: AnyView`
             //  - The macro providing a valid `body` implementation, but no existing declaration is present.
             //      This will compile, but will cause an infinite loop.
-            guard memberDecls.contains(where: isBodyFunction) else {
+            guard let bodyDecl = memberDecls.first(where: isBodyFunction) else {
                 context.diagnose(.init(node: declaration, message: MacroExpansionErrorMessage("\(declaration.name) must have a ViewModifier body function")))
                 return []
             }
             
-            var accessControl = declaration.modifiers.first(where: { $0.name.tokenKind.isVisibilityKeyword })?.name.trimmed
-            accessControl?.trailingTrivia = .space
+            let accessControl = accessControl(of: bodyDecl)
             
             return [
                 """
